@@ -21,7 +21,7 @@ user_id INTEGER,
 CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(userid) ON DELETE SET NULL
 );
 
-CREATE TABLE sessions(
+CREATE TABLE session(
 sid VARCHAR NOT NULL COLLATE "default",
 sess JSON NOT NULL,
 expire TIMESTAMP(6) NOT NULL,

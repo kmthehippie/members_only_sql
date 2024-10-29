@@ -54,7 +54,7 @@ exports.PostRegister = [
       const hashedPassword = await genPassword(password);
 
       let actualStatus;
-      if (status === "admin") {
+      if (status === "admin" || "ADMIN") {
         actualStatus = "ADMIN";
       } else if (status === "TOP") {
         actualStatus = "PREMIER";
