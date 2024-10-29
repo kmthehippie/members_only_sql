@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register to Message Board</title>
+  </head>
+  <body>
+    <h1>Register</h1>
+    <form action="/register" method="POST">
+      <label for="email">Email</label>
+      <input id="email" name="email" placeholder="email" type="text" />
+      <br />
+      <label for="firstname">First Name</label>
+      <input id="firstname" name="firstname" type="firstname" />
+      <br />
+      <label for="lastname">Last Name</label>
+      <input id="lastname" name="lastname" type="lastname" />
+      <br />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" />
+      <br />
+      <label for="cfmpassword">Confirm Password</label>
+      <input id="cfmpassword" name="cfmpassword" type="password" />
+      <br />
+      <label for="status">Secret Question! What is the secret answer?</label>
+      <input id="status" name="status" type="status" />
+      <br />
+      <button>Register</button>
+      <p id="displayErr" style="display: none; color: red">Error</p>
+    </form>
+  </body>
+  <script>
+    document.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        email: document.getElementById("email").value,
+        firstname: document.getElementById("firstname").value,
+        lastname: document.getElementById("lastname").value,
+        password: document.getElementById("password").value,
+        cfmpassword: document.getElementById("cfmpassword").value,
+        status: document.getElementById("status").value,
+      };
+
+      try {
+        if (formData.cfmpassword !== formData.password) {
+          throw new Error("Passwords do not match");
+        }
+
+        const response = await fetch("/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.errors) {
+            const errorMessage = data.errors
+              .map((err) => `${err.field}: ${err.message}`)
+              .join("\n");
+            throw new Error(errorMessage);
+          } else {
+            throw new Error(data.message || "Registration failed");
+          }
+        }
+        window.location.href = "/login";
+      } catch (err) {
+        const error = document.getElementById("displayErr");
+        error.style = "display: block; color: red";
+        error.textContent = `${err}`;
+        console.error(err);
+      }
+    });
+  </script>
+</html>

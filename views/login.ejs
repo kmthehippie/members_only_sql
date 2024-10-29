@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login to Message Board</title>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <form action="/login" method="POST">
+      <label for="email">Email</label>
+      <input id="email" name="email" placeholder="email" type="email" />
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        placeholder="password"
+        type="password"
+      />
+      <button id="login-btn">Login</button>
+      <p id="displayErr" style="display: none; color: red">Error</p>
+    </form>
+  </body>
+  <script>
+    document.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const loginData = {
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+      };
+
+      try {
+        console.log("Login Data", loginData);
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(loginData),
+        });
+
+        console.log(response);
+        if (response.ok) {
+          window.location.href = "/";
+        } else {
+          const errorData = await response.json();
+          console.log("ERROR", errorData.error);
+          throw Error(errorData.error);
+        }
+      } catch (err) {
+        const error = document.getElementById("displayErr");
+        error.style = "display: block; color: red";
+        error.textContent = err;
+        console.log("Catching error: ", err);
+        console.error("Error posting data: ", err);
+      }
+    });
+  </script>
+</html>

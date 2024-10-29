@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message Board</title>
+  </head>
+  <body>
+    <nav>
+      <% if (user) { %>
+      <p>Welcome, <%= user.firstname %></p>
+      <a href="/logout">Logout</a>
+      <a href="/create">New Message</a>
+      <a href="/status">Status</a>
+      <% } else { %>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+      <% } %>
+    </nav>
+
+    <!-- Messages Section -->
+    <div class="messages" id="message-container">
+      <% if (messages && messages.length > 0) { messages.forEach((message) => {
+      %>
+      <div class="message">
+        <h2><%= message.title %></h2>
+
+        <p><%= message.message_text %></p>
+
+        <% if (user) { %>
+        <!-- Show user info when logged in -->
+        <p>Posted by: <%= message.firstname %></p>
+        <p>Posted on: <%= message.date %></p>
+
+        <% } %> <% if (user?.status === "ADMIN" ) { %>
+        <!-- Show delete button for admins -->
+
+        <button
+          class="delete-btn"
+          type="submit"
+          data-id="<%=message.messageid %>"
+        >
+          Delete
+        </button>
+
+        <% } %>
+      </div>
+      <% }) %> <% } else { %>
+      <p>No messages yet!</p>
+      <% } %>
+    </div>
+
+    <div class="loading" id="loading-indicator" style="display: none">
+      Loading...
+    </div>
+  </body>
+  <script>
+    document.querySelectorAll(".delete-btn").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const messageid = btn.getAttribute("data-id");
+        const response = await fetch(`/message/${messageid}/delete`, {
+          method: "POST",
+        });
+        if (response.status === 204) {
+          window.location.reload();
+        }
+      })
+    );
+
+    let isLoading = false;
+    let currentPage = 1;
+    let hasMoreMessages = true;
+    const limit = 10;
+
+    window.addEventListener("scroll", async () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+
+      if (!isLoading && scrollTop + clientHeight >= scrollHeight) {
+        isLoading = true;
+        currentPage++;
+        await loadMoreMessages();
+      }
+    });
+
+    const loadMoreMessages = async () => {
+      if (!hasMoreMessages) return;
+      const loadingIndicator = document.getElementById("loading-indicator");
+      loadingIndicator.style.display = "block";
+
+      const response = await fetch(`/?page=${currentPage}&limit=${limit}`);
+      const messages = await response.json();
+
+      const messageContainer = document.getElementById("message-container");
+      messages.forEach((message) => {
+        const messageElement = createMessageElement(message);
+        messageContainer.appendChild(messageElement);
+      });
+
+      loadingIndicator.style.display = "none";
+      if (messages.length < limit) {
+        hasMoreMessages = false;
+      }
+      isLoading = false;
+    };
+
+    const createMessageElement = (message) => {
+      // Create main container div
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("message");
+
+      // Title
+      const titleElement = document.createElement("h2");
+      titleElement.textContent = message.title;
+      messageElement.appendChild(titleElement);
+
+      // Message text
+      const messageTextElement = document.createElement("p");
+      messageTextElement.textContent = message.message_text;
+      messageElement.appendChild(messageTextElement);
+
+      // Posted by and date (only if user is logged in)
+      if (message.firstname) {
+        const postedByElement = document.createElement("p");
+        postedByElement.textContent = `Posted by: ${message.firstname}`;
+        messageElement.appendChild(postedByElement);
+
+        const dateElement = document.createElement("p");
+        dateElement.textContent = `Posted on: ${new Date(
+          message.date
+        ).toLocaleDateString()}`;
+        messageElement.appendChild(dateElement);
+      }
+
+      // Delete button for admins
+      if (message.isAdmin) {
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("delete-btn");
+        deleteButton.type = "submit";
+        deleteButton.dataset.id = message.messageid;
+        deleteButton.textContent = "Delete";
+
+        deleteButton.addEventListener("click", async () => {
+          const messageid = deleteButton.getAttribute("data-id");
+          const response = await fetch(`/message/${messageid}/delete`, {
+            method: "POST",
+          });
+          if (response.status === 204) {
+            deleteButton.closest(".message").remove();
+          }
+        });
+
+        messageElement.appendChild(deleteButton);
+      }
+
+      return messageElement;
+    };
+  </script>
+</html>

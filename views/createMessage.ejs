@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message Board</title>
+  </head>
+  <body>
+    <div>
+      <h1 class="title">Create New Message</h1>
+      <form method="POST">
+        <div class="form-div">
+          <label for="title">Title</label>
+          <br />
+          <input
+            id="title"
+            type="title"
+            name="title"
+            class="form-input"
+            required
+          />
+        </div>
+        <div class="form-div">
+          <label for="text">Message</label>
+          <br />
+          <textarea
+            name="message_text"
+            id="text"
+            rows="6"
+            cols="50"
+            class="form-input"
+            required
+          ></textarea>
+        </div>
+        <div class="form-btns">
+          <button class="delete-btn" type="submit">Submit</button>
+        </div>
+        <input type="hidden" name="id" value=" <%=user.userid%> " />
+      </form>
+      <p id="displayErr" style="display: none; color: red">Error</p>
+    </div>
+  </body>
+  <script></script>
+</html>
